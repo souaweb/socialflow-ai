@@ -1,0 +1,14 @@
+
+{
+  "name": "SocialFlow AI",
+  "short_name": "SocialFlow",
+  "description": "Omnichannel Social Media Automation with AI Sales Agent",
+  "requestFramePermissions": [
+    "camera",
+    "microphone",
+    "geolocation"
+  ],
+  "display": "standalone",
+  "theme_color": "#4f46e5",
+  "background_color": "#f8fafc"
+}

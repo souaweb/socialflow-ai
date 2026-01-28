@@ -1,0 +1,196 @@
+# =============================================================================
+# SocialFlow AI - Apache Configuration para Hostinger
+# Copie este arquivo para: ~/public_html/.htaccess
+# =============================================================================
+
+# Ativar mod_rewrite
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # =========================================================================
+    # 1. REDIRECIONAR HTTP PARA HTTPS
+    # =========================================================================
+    
+    RewriteCond %{HTTPS} off
+    RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+    
+    # =========================================================================
+    # 2. PROXY PARA NODEJS (APLICAÇÃO BACKEND)
+    # =========================================================================
+    
+    # Redirecionar todas as requisições para a aplicação Node.js
+    RewriteRule ^(.*)$ http://localhost:3001/$1 [P,QSA,L]
+    
+    # Configurações de proxy
+    ProxyPreserveHost On
+    ProxyPassReverse / http://localhost:3001/
+    
+    # =========================================================================
+    # 3. HEADERS DE SEGURANÇA
+    # =========================================================================
+    
+    # Prevenir clickjacking
+    Header always set X-Frame-Options "SAMEORIGIN"
+    
+    # Prevenir MIME sniffing
+    Header always set X-Content-Type-Options "nosniff"
+    
+    # Ativar XSS protection no IE
+    Header always set X-XSS-Protection "1; mode=block"
+    
+    # Content Security Policy
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https:;"
+    
+    # =========================================================================
+    # 4. COMPRESSION
+    # =========================================================================
+    
+    <IfModule mod_deflate.c>
+        AddOutputFilterByType DEFLATE text/plain
+        AddOutputFilterByType DEFLATE text/html
+        AddOutputFilterByType DEFLATE text/xml
+        AddOutputFilterByType DEFLATE text/css
+        AddOutputFilterByType DEFLATE text/javascript
+        AddOutputFilterByType DEFLATE application/xml
+        AddOutputFilterByType DEFLATE application/xhtml+xml
+        AddOutputFilterByType DEFLATE application/rss+xml
+        AddOutputFilterByType DEFLATE application/javascript
+        AddOutputFilterByType DEFLATE application/x-javascript
+        AddOutputFilterByType DEFLATE application/json
+    </IfModule>
+    
+    # =========================================================================
+    # 5. CACHE
+    # =========================================================================
+    
+    <IfModule mod_expires.c>
+        ExpiresActive On
+        
+        # CSS
+        ExpiresByType text/css "access plus 1 year"
+        
+        # JavaScript
+        ExpiresByType application/javascript "access plus 1 year"
+        ExpiresByType text/javascript "access plus 1 year"
+        
+        # Imagens
+        ExpiresByType image/gif "access plus 1 year"
+        ExpiresByType image/jpeg "access plus 1 year"
+        ExpiresByType image/png "access plus 1 year"
+        ExpiresByType image/webp "access plus 1 year"
+        ExpiresByType image/svg+xml "access plus 1 year"
+        
+        # Fontes
+        ExpiresByType font/ttf "access plus 1 year"
+        ExpiresByType font/woff "access plus 1 year"
+        ExpiresByType font/woff2 "access plus 1 year"
+        ExpiresByType application/font-woff "access plus 1 year"
+        
+        # HTML (sem cache para sempre atualizar)
+        ExpiresByType text/html "access plus 0 seconds"
+    </IfModule>
+    
+    # =========================================================================
+    # 6. GZIP COMPRESSION HEADERS
+    # =========================================================================
+    
+    <IfModule mod_headers.c>
+        Header append Vary Accept-Encoding
+    </IfModule>
+    
+    # =========================================================================
+    # 7. PROTEÇÃO CONTRA ACESSO DIRETO
+    # =========================================================================
+    
+    # Impedir acesso direto a certos arquivos
+    RewriteRule "^\.(env|htaccess|git)" - [F]
+    
+    # =========================================================================
+    # 8. TRATAMENTO DE ERROS
+    # =========================================================================
+    
+    # Redirecionar erros para a aplicação (SPA)
+    ErrorDocument 404 /index.html
+    ErrorDocument 500 /index.html
+    
+</IfModule>
+
+# =============================================================================
+# CONFIGURAÇÕES GERAIS
+# =============================================================================
+
+# Usar UTF-8 como encoding padrão
+AddCharset UTF-8 .html .css .js .json .xml .php
+
+# Remover ETags (para melhor caching)
+Header unset ETag
+FileETag None
+
+# Desabilitar directory listing
+Options -Indexes
+
+# Preservar permissões de arquivo
+Options +FollowSymlinks
+
+# =============================================================================
+# PROTEÇÃO DE SEGURANÇA ADICIONAL
+# =============================================================================
+
+# Bloquear acesso a .env files
+<FilesMatch "\.env\.?.*?$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Bloquear acesso a arquivos de configuração
+<FilesMatch "^(package\.json|package-lock\.json|tsconfig\.json)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Bloquear acesso a logs
+<DirectoryMatch "logs">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</DirectoryMatch>
+
+# =============================================================================
+# TRATAMENTO DE MIME TYPES
+# =============================================================================
+
+AddType application/json .json
+AddType application/javascript .js
+AddType text/plain .log
+
+# =============================================================================
+# NOTAS
+# =============================================================================
+
+# Este arquivo deve estar em: ~/public_html/.htaccess
+# Permissões: 644
+#
+# Após fazer upload, a aplicação deve estar acessível via:
+# https://seu-dominio.com.br
+#
+# Se não funcionar, verifique:
+# 1. mod_rewrite está ativado (Apache)
+# 2. mod_proxy está ativado
+# 3. Aplicação Node.js rodando na porta 3001 (pm2 status)
+# 4. .htaccess tem permissão de leitura
+
+# =============================================================================

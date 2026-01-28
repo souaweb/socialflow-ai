@@ -1,0 +1,112 @@
+version: '3.9'
+
+services:
+  # PostgreSQL - Banco principal (usuarios, posts, assinaturas, pagamentos)
+  postgres:
+    image: postgres:14-alpine
+    container_name: socialflow-postgres
+    environment:
+      POSTGRES_USER: socialflow
+      POSTGRES_PASSWORD: socialflow123
+      POSTGRES_DB: socialflow_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-postgres.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - socialflow-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U socialflow"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MongoDB - Analytics e logs
+  mongodb:
+    image: mongo:5.0
+    container_name: socialflow-mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: socialflow
+      MONGO_INITDB_ROOT_PASSWORD: socialflow123
+      MONGO_INITDB_DATABASE: socialflow_analytics
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - ./scripts/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js
+    networks:
+      - socialflow-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis - Cache e job queue
+  redis:
+    image: redis:7-alpine
+    container_name: socialflow-redis
+    command: redis-server --requirepass socialflow123
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - socialflow-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # PgAdmin - Interface web para gerenciar PostgreSQL
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: socialflow-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@socialflow.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+    ports:
+      - "5050:80"
+    networks:
+      - socialflow-network
+    depends_on:
+      - postgres
+
+  # MongoDB Express - Interface web para gerenciar MongoDB
+  mongo-express:
+    image: mongo-express:latest
+    container_name: socialflow-mongo-express
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: socialflow
+      ME_CONFIG_MONGODB_ADMINPASSWORD: socialflow123
+      ME_CONFIG_MONGODB_URL: mongodb://socialflow:socialflow123@mongodb:27017/
+    ports:
+      - "8081:8081"
+    networks:
+      - socialflow-network
+    depends_on:
+      - mongodb
+
+  # Redis Commander - Interface web para gerenciar Redis
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    container_name: socialflow-redis-commander
+    environment:
+      REDIS_HOSTS: local:redis:6379:0:socialflow123
+    ports:
+      - "8082:8081"
+    networks:
+      - socialflow-network
+    depends_on:
+      - redis
+
+volumes:
+  postgres_data:
+  mongodb_data:
+  redis_data:
+
+networks:
+  socialflow-network:
+    driver: bridge
