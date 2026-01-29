@@ -1,0 +1,97 @@
+{
+  "name": "SocialFlow AI",
+  "description": "Automação de redes sociais com IA - SaaS completo com Mercado Pago",
+  "builder": "nixpacks",
+  "buildCommand": "npm install && cd backend && npm install && npm run build && cd .. && npm run build",
+  "startCommand": "npm run start",
+  "variables": {
+    "NODE_ENV": {
+      "description": "Ambiente da aplicação",
+      "value": "production"
+    },
+    "DATABASE_HOST": {
+      "description": "Host do PostgreSQL",
+      "value": "${{ Postgres.PGHOST }}"
+    },
+    "DATABASE_PORT": {
+      "description": "Porta do PostgreSQL",
+      "value": "${{ Postgres.PGPORT }}"
+    },
+    "DATABASE_USER": {
+      "description": "Usuário do PostgreSQL",
+      "value": "${{ Postgres.PGUSER }}"
+    },
+    "DATABASE_PASSWORD": {
+      "description": "Senha do PostgreSQL",
+      "value": "${{ Postgres.PGPASSWORD }}"
+    },
+    "DATABASE_NAME": {
+      "description": "Nome do banco PostgreSQL",
+      "value": "${{ Postgres.PGDATABASE }}"
+    },
+    "MONGODB_URI": {
+      "description": "Connection string do MongoDB",
+      "value": "${{ MongoDB.MONGO_URL }}"
+    },
+    "REDIS_HOST": {
+      "description": "Host do Redis",
+      "value": "${{ Redis.REDIS_HOST }}"
+    },
+    "REDIS_PORT": {
+      "description": "Porta do Redis",
+      "value": "${{ Redis.REDIS_PORT }}"
+    },
+    "REDIS_PASSWORD": {
+      "description": "Senha do Redis",
+      "value": "${{ Redis.REDIS_PASSWORD }}"
+    },
+    "JWT_SECRET": {
+      "description": "Secret para JWT",
+      "value": "change_me_in_production_12345_abcdefghijklmnop"
+    },
+    "META_APP_ID": {
+      "description": "Meta App ID",
+      "value": ""
+    },
+    "META_APP_SECRET": {
+      "description": "Meta App Secret",
+      "value": ""
+    },
+    "TIKTOK_CLIENT_ID": {
+      "description": "TikTok Client ID",
+      "value": ""
+    },
+    "TIKTOK_CLIENT_SECRET": {
+      "description": "TikTok Client Secret",
+      "value": ""
+    },
+    "YOUTUBE_CLIENT_ID": {
+      "description": "YouTube Client ID",
+      "value": ""
+    },
+    "YOUTUBE_CLIENT_SECRET": {
+      "description": "YouTube Client Secret",
+      "value": ""
+    },
+    "GEMINI_API_KEY": {
+      "description": "Google Gemini API Key",
+      "value": ""
+    },
+    "MERCADOPAGO_ACCESS_TOKEN": {
+      "description": "Mercado Pago Access Token",
+      "value": ""
+    },
+    "MERCADOPAGO_PUBLIC_KEY": {
+      "description": "Mercado Pago Public Key",
+      "value": ""
+    },
+    "MERCADOPAGO_MODE": {
+      "description": "Mercado Pago Mode (sandbox ou production)",
+      "value": "production"
+    },
+    "APP_URL": {
+      "description": "URL da aplicação em produção",
+      "value": "https://seu-dominio.com"
+    }
+  }
+}
